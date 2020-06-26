@@ -1,0 +1,43 @@
+{
+    "license": "Apache-2.0",
+    "engines": [
+        {
+            "version": ">=4.0",
+            "name": "cordova-android"
+        },
+        {
+            "version": ">=3.9.2",
+            "name": "cordova-ios"
+        },
+        {
+            "version": ">=5.0.0",
+            "name": "cordova-windows"
+        }
+    ],
+    "name": "com.mirasense.scanditsdk.plugin",
+    "repository": {
+        "url": "git+https://github.com/Scandit/BarcodeScannerPlugin.git",
+        "type": "git"
+    },
+    "author": "Scandit AG",
+    "bugs": {
+        "url": "https://github.com/Scandit/BarcodeScannerPlugin/issues"
+    },
+    "version": "5.15.0",
+    "keywords": [
+        "ecosystem:cordova",
+        "cordova-ios",
+        "cordova-android",
+        "cordova-windows"
+    ],
+    "cordova": {
+        "platforms": [
+            "ios",
+            "android",
+            "windows"
+        ],
+        "id": "com.mirasense.scanditsdk.plugin"
+    },
+    "homepage": "https://github.com/Scandit/BarcodeScannerPlugin#readme",
+    "description": "Scandit Barcode Scanner Plugin"
+}
