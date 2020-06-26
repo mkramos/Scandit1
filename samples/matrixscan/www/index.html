@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1,
+                minimum-scale=1, width=device-width, height=device-height" />
+        <title>Scandit Barcode Scanner</title>
+
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                align-items: center;
+                height: 100vh;
+                width: 100vw;
+                font-family: Helvetica, Arial;
+                background: black;
+            }
+
+            #container {
+                display: flex;
+                flex-direction: column;
+                justify-content: end;
+                align-items: center;
+            }
+
+            input[type="button"] {
+                -webkit-appearance: none;
+                width: 150px;
+                height: 40px;
+                font-size: 20px;
+                color: white;
+                border: none;
+                border-radius: 0;
+                text-transform: uppercase;
+                background: #39C1CC;
+            }
+
+            #scan-button {
+                margin-top: 230px;
+            }
+
+            #done-button {
+                margin-bottom: 30px;
+            }
+
+            span {
+                color: white;
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript">
+            let recognizedCodes = [];
+            var picker;
+
+            function setUI(isScanning, scannedCodes) {
+                document.getElementById("scan-button").style.opacity = isScanning ? 0 : 1;
+                document.getElementById("done-button").style.opacity = isScanning ? 1 : 0;
+
+                if (scannedCodes) {
+                    document.getElementById("scanned-codes").style.opacity = 1;
+                    document.getElementById("scanned-codes").innerText = scannedCodes;
+                } else {
+                    document.getElementById("scanned-codes").style.opacity = 0;
+                }
+            }
+
+            function didRecognizeNewCodes(matrixScanSession) {
+                // If you want to visually reject a code you should use MatrixScanSession's rejectTrackedCode() method.
+                // For example, the following code will reject all EAN8 codes.
+                matrixScanSession.newlyTrackedCodes.forEach(barcode => {
+                    if (barcode.symbology == Scandit.Barcode.Symbology.EAN8) {
+                        matrixScanSession.rejectTrackedCode(barcode)
+                    } else if (recognizedCodes.indexOf(barcode.data) < 0) {
+                        recognizedCodes.push(barcode.data)
+                    }
+                });
+            }
+
+            function scan() {
+                setUI(true);
+                recognizedCodes = [];
+
+                Scandit.License.setAppKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --");
+
+                // The scanning behavior of the barcode picker is configured through scan
+                // settings. We start with empty scan settings and enable a generous set
+                // of 1D symbologies. Matrix scan is currently only supported for 1D
+                // symbologies, enabling 2D symbologies will result in unexpected results.
+                // In your own apps, only enable the symbologies you actually need.
+                var settings = new Scandit.ScanSettings();
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.EAN13, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.EAN8, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.UPCA, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.UPCE, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.CODE39, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.CODE128, true);
+                settings.setSymbologyEnabled(Scandit.Barcode.Symbology.ITF, true);
+
+                // Enable matrix scan and set the max number of barcodes that can be recognized per frame
+                // to some reasonable number for your use case. The max number of codes per frame does not
+                // limit the number of codes that can be tracked at the same time, it only limits the
+                // number of codes that can be newly recognized per frame.
+                settings.matrixScanEnabled = true;
+                settings.maxNumberOfCodesPerFrame = 10;
+
+                // Enable HD resolution for better MatrixScan performance
+                settings.highDensityModeEnabled = true;
+
+                picker = new Scandit.BarcodePicker(settings);
+
+                // Set continuous mode to not return after the first scan.
+                picker.continuousMode = true;
+
+                // Set the GUI style to MATRIXSCAN in order to use the default code visualization.
+                picker.getOverlayView().setGuiStyle(Scandit.ScanOverlay.GuiStyle.MATRIXSCAN);
+
+                // When matrix scan is enabled beeping/vibrating is often not wanted.
+                picker.getOverlayView().setBeepEnabled(false);
+                picker.getOverlayView().setVibrateEnabled(false);
+
+                var constraints = new Scandit.Constraints();
+                constraints.bottomMargin = '30%';
+                picker.setConstraints(constraints, constraints)
+
+                picker.show({
+                    didRecognizeNewCodes: didRecognizeNewCodes,
+                });
+                picker.startScanning();
+            }
+
+            function done() {
+                // Stop and hide the scanner
+                picker.cancel()
+
+                // Assemble the text that will be shown
+                barcodes = recognizedCodes.join('\n');
+
+                // Update the UI and show the scanned barcodes
+                setUI(false, barcodes)
+            }
+        </script>
+
+        <input id="scan-button" type="button" value="scan" onclick="scan()" />
+
+        <div id="container">
+            <span id="scanned-codes">No scanned codes yet</span>
+            <input id="done-button" type="button" value="done" onclick="done()" />
+        </div>
+
+        <script type="text/javascript">
+            setUI(false)
+        </script>
+    </body>
+</html>
