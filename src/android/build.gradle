@@ -1,0 +1,9 @@
+repositories {
+    flatDir {
+        dirs 'libs', 'src/main/libs'
+    }
+}
+
+dependencies {
+    compile(name: 'ScanditBarcodeScanner', ext: 'aar')
+}
